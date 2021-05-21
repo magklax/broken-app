@@ -1,5 +1,5 @@
-var router = require("express").Router();
-var Game = require("../db").import("../models/game");
+const router = require("express").Router();
+const Game = require("../db").import("../models/game");
 
 router.get("/all", async (req, res) => {
   try {
@@ -8,27 +8,26 @@ router.get("/all", async (req, res) => {
       games: games,
       message: "Data fetched.",
     });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({
       message: "Data not found",
     });
   }
 });
 
-router.get("/:id", (req, res) => {
-  Game.findOne({ where: { id: req.params.id, owner_id: req.user.id } }).then(
-    function findSuccess(game) {
-      res.status(200).json({
-        game: game,
-      });
-    },
-
-    function findFail(err) {
-      res.status(500).json({
-        message: "Data not found.",
-      });
-    }
-  );
+router.get("/:id", async (req, res) => {
+  try {
+    const game = Game.findOne({
+      where: { id: req.params.id, owner_id: req.user.id },
+    });
+    res.status(200).json({
+      game: game,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Data not found.",
+    });
+  }
 });
 
 router.post("/create", async (req, res) => {
@@ -51,57 +50,53 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.put("/update/:id", (req, res) => {
-  Game.update(
-    {
-      title: req.body.game.title,
-      studio: req.body.game.studio,
-      esrb_rating: req.body.game.esrb_rating,
-      user_rating: req.body.game.user_rating,
-      have_played: req.body.game.have_played,
-    },
-    {
-      where: {
-        id: req.params.id,
-        owner_id: req.user,
+router.put("/update/:id", async (req, res) => {
+  try {
+    const game = await Game.update(
+      {
+        title: req.body.game.title,
+        studio: req.body.game.studio,
+        esrb_rating: req.body.game.esrb_rating,
+        user_rating: req.body.game.user_rating,
+        have_played: req.body.game.have_played,
       },
-    }
-  ).then(
-    function updateSuccess(game) {
-      res.status(200).json({
-        game: game,
-        message: "Successfully updated.",
-      });
-    },
+      {
+        where: {
+          id: req.params.id,
+          owner_id: req.user.id,
+        },
+      }
+    );
 
-    function updateFail(err) {
-      res.status(500).json({
-        message: err.message,
-      });
-    }
-  );
+    res.status(200).json({
+      game: game,
+      message: "Successfully updated.",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
 });
 
-router.delete("/remove/:id", (req, res) => {
-  Game.destroy({
-    where: {
-      id: req.params.id,
-      owner_id: req.user.id,
-    },
-  }).then(
-    function deleteSuccess(game) {
-      res.status(200).json({
-        game: game,
-        message: "Successfully deleted",
-      });
-    },
+router.delete("/remove/:id", async (req, res) => {
+  try {
+    const game = await Game.destroy({
+      where: {
+        id: req.params.id,
+        owner_id: req.user.id,
+      },
+    });
 
-    function deleteFail(err) {
-      res.status(500).json({
-        error: err.message,
-      });
-    }
-  );
+    res.status(200).json({
+      game: game,
+      message: "Successfully deleted",
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
 });
 
 module.exports = router;

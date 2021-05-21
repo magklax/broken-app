@@ -1,9 +1,8 @@
-var router = require("express").Router();
+const router = require("express").Router();
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-var bcrypt = require("bcrypt");
-var jwt = require("jsonwebtoken");
-
-var User = require("../db").import("../models/user");
+const User = require("../db").import("../models/user");
 
 router.post("/signup", async (req, res) => {
   try {
@@ -13,7 +12,7 @@ router.post("/signup", async (req, res) => {
       passwordHash: bcrypt.hashSync(req.body.user.password, 10),
       email: req.body.user.email,
     });
-    let token = jwt.sign({ id: user.id }, "lets_play_sum_games_man", {
+    const token = jwt.sign({ id: user.id }, "lets_play_sum_games_man", {
       expiresIn: 60 * 60 * 24,
     });
     res.status(200).json({
@@ -33,7 +32,7 @@ router.post("/signin", async (req, res) => {
   if (user) {
     bcrypt.compare(req.body.user.password, user.passwordHash, (_, matches) => {
       if (matches) {
-        var token = jwt.sign({ id: user.id }, "lets_play_sum_games_man", {
+        const token = jwt.sign({ id: user.id }, "lets_play_sum_games_man", {
           expiresIn: 60 * 60 * 24,
         });
         res.json({
