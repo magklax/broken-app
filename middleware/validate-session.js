@@ -23,6 +23,7 @@ module.exports = function (req, res, next) {
             try {
               const user = await User.findOne({ where: { id: decoded.id } });
               req.user = user;
+              console.log(`user: ${user.username}`);
               next();
             } catch (error) {
               res.status(401).send({
