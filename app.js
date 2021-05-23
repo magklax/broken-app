@@ -2,11 +2,8 @@ require("dotenv").config();
 
 const express = require("express");
 const app = express();
-const db = require("./db");
 const user = require("./controllers/usercontroller");
 const game = require("./controllers/gamecontroller");
-
-db.sync();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

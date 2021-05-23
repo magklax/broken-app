@@ -19,4 +19,11 @@ sequelize
   .then(() => console.log("Connected to DB"))
   .catch((err) => console.log(`Error: ${err}`));
 
+sequelize
+  .sync()
+  .then(() => {
+    console.log("DB has been synced");
+  })
+  .catch((err) => console.log(`Error: ${err}`));
+
 module.exports = sequelize;
