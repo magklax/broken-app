@@ -1,29 +1,39 @@
-const jwt = require('jsonwebtoken');
-var User = require('sequelize').import('../models/user');
+const jwt = require("jsonwebtoken");
+const User = require("../db").import("../models/user");
 
 module.exports = function (req, res, next) {
-    if (req.method == 'OPTIONS') {
-        next();   // allowing options as a method for request
-    } else {
-        var sessionToken = req.headers.authorization;
-        console.log(sessionToken);
-        if (!sessionToken) return res.status(403).send({ auth: false, message: "No token provided." });
-        else {
-            jwt.verify(sessionToken, 'lets_play_sum_games_man', (err, decoded) => {
-                if (decoded) {
-                    User.findOne({ where: { id: decoded.id } }).then(user => {
-                        req.user = user;
-                        console.log(`user: ${user}`)
-                        next()
-                    },
-                        function () {
-                            res.status(401).send({ error: "not authorized" });
-                        })
+  if (req.method == "OPTIONS") {
+    next();
+  } else {
+    const sessionToken = req.headers.authorization;
+    if (!sessionToken)
+      return res
+        .status(403)
+        .send({ auth: false, message: "No token provided." });
+    else {
+      jwt.verify(
+        sessionToken,
+        "lets_play_sum_games_man",
+        async (err, decoded) => {
+          if (err) {
+            res.status(400).send({ message: "not authorized", error: err });
+          }
 
-                } else {
-                    res.status(400).send({ error: "not authorized" })
-                }
-            });
+          if (decoded) {
+            try {
+              const user = await User.findOne({ where: { id: decoded.id } });
+              req.user = user;
+              console.log(`user: ${user.username}`);
+              next();
+            } catch (error) {
+              res.status(401).send({
+                message: "not authorized",
+                error: error,
+              });
+            }
+          }
         }
+      );
     }
-}
+  }
+};
